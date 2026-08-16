@@ -22,7 +22,8 @@ FROM docker.io/ubuntu:$UBUNTU_VERSION AS build
 ARG TARGETARCH
 
 RUN apt-get update && \
-    apt-get install -y gcc-14 g++-14 build-essential git cmake libssl-dev
+    apt-get install -y gcc-14 g++-14 build-essential git cmake libssl-dev python3 \
+    ocl-icd-opencl-dev
 
 ENV CC=gcc-14 CXX=g++-14
 
@@ -33,7 +34,7 @@ COPY . .
 COPY --from=web /app/tools/ui/dist tools/ui/dist
 
 RUN if [ "$TARGETARCH" = "amd64" ] || [ "$TARGETARCH" = "arm64" ]; then \
-        cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DGGML_NATIVE=OFF -DLLAMA_BUILD_TESTS=OFF -DGGML_BACKEND_DL=ON -DGGML_CPU_ALL_VARIANTS=ON; \
+        cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DGGML_NATIVE=OFF -DLLAMA_BUILD_TESTS=OFF -DGGML_BACKEND_DL=ON -DGGML_CPU_ALL_VARIANTS=ON -DGGML_OPENCL=ON; \
     else \
         echo "Unsupported architecture"; \
         exit 1; \
@@ -69,7 +70,7 @@ LABEL org.opencontainers.image.created=$BUILD_DATE \
       org.opencontainers.image.source=$IMAGE_SOURCE
 
 RUN apt-get update \
-    && apt-get install -y libgomp1 curl ffmpeg \
+    && apt-get install -y libgomp1 curl ffmpeg ocl-icd-libopencl1 \
     && apt autoremove -y \
     && apt clean -y \
     && rm -rf /tmp/* /var/tmp/* \
