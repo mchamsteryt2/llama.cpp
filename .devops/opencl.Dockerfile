@@ -56,6 +56,8 @@ RUN mkdir -p /app/full \
 ## Base image
 FROM docker.io/ubuntu:$UBUNTU_VERSION AS base
 
+ARG TARGETARCH
+
 ARG BUILD_DATE=N/A
 ARG APP_VERSION=N/A
 ARG APP_REVISION=N/A
@@ -70,7 +72,8 @@ LABEL org.opencontainers.image.created=$BUILD_DATE \
       org.opencontainers.image.source=$IMAGE_SOURCE
 
 RUN apt-get update \
-    && apt-get install -y libgomp1 curl ffmpeg ocl-icd-libopencl1 intel-opencl-icd \
+    && apt-get install -y libgomp1 curl ffmpeg ocl-icd-libopencl1 \
+    && if [ "$TARGETARCH" = "amd64" ]; then apt-get install -y intel-opencl-icd; fi \
     && apt autoremove -y \
     && apt clean -y \
     && rm -rf /tmp/* /var/tmp/* \
