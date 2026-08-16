@@ -82,6 +82,8 @@ RUN apt-get update \
 
 COPY --from=build /app/lib/ /app
 
+ENV LD_LIBRARY_PATH=/app
+
 ### Full
 FROM base AS full
 
